@@ -51,9 +51,8 @@ const Chatbot: React.FC = () => {
           <div
             key={index}
             className={`my-2 p-4 rounded-lg ${message.sender === 'bot' ? 'bg-blue-200 text-left' : 'bg-green-200 text-right'}`}
-          >
-            {message.text}
-          </div>
+            dangerouslySetInnerHTML={{ __html: interpretSpecialChars(message.text) }}
+          />
         ))}
       </div>
       <div className="flex p-4 bg-white border-t border-gray-200">
@@ -72,5 +71,21 @@ const Chatbot: React.FC = () => {
     </div>
   );
 };
+
+function interpretSpecialChars(text: string): string {
+  const map: { [key: string]: string } = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+    '*': '<b>',  // interprets '*' as bold start tag
+    '_': '<i>',  // interprets '_' as italic start tag
+    // Add corresponding closing tags for bold and italic
+    '**': '</b>',
+    '__': '</i>',
+  };
+  return text.replace(/[*_]{1,2}|[&<>"']/g, (m) => map[m] || m);
+}
 
 export default Chatbot;
