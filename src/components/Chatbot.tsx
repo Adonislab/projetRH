@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, KeyboardEvent } from 'react';
-import { FiSend, FiUser, FiCpu } from 'react-icons/fi';
+import { FiSend} from 'react-icons/fi';
 import { HfInference } from '@huggingface/inference';
 
 interface Message {
@@ -10,7 +10,7 @@ interface Message {
 const inference = new HfInference('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');
 
 const Chatbot: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([{ text: 'Bonjour, je suis le jeune Rh disposé à répondre à vos questions', sender: 'bot' }]);
+  const [messages, setMessages] = useState<Message[]>([{ text: 'Bonjour, je suis le jeune Rh disposé à répondre à vos questions.', sender: 'bot' }]);
   const [input, setInput] = useState<string>('');
 
   const sendMessage = async () => {
@@ -52,7 +52,7 @@ const Chatbot: React.FC = () => {
             key={index}
             className={`flex items-center my-2 p-4 rounded-lg ${message.sender === 'bot' ? 'bg-blue-200 text-left' : 'bg-green-200 text-right'}`}
           >
-            {message.sender === 'bot' ? <FiCpu className="mr-2" size={20} /> : <FiUser className="mr-2" size={20} />}
+            {message.sender === 'bot'}
             <span dangerouslySetInnerHTML={{ __html: interpretSpecialChars(message.text) }} />
           </div>
         ))}
