@@ -10,7 +10,7 @@ interface Message {
 const inference = new HfInference('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');
 
 const Chatbot: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([{ text: 'Bonjour! Je suis votre assistant RH', sender: 'bot' }]);
+  const [messages, setMessages] = useState<Message[]>([{ text: 'Bonjour, je suis le jeune Rh disposé à répondre à vos questions', sender: 'bot' }]);
   const [input, setInput] = useState<string>('');
 
   const sendMessage = async () => {
