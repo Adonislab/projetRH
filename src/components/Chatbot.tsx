@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, KeyboardEvent } from 'react';
-import { FiSend } from 'react-icons/fi';
+import { FiSend, FiUser, FiCpu } from 'react-icons/fi';
 import { HfInference } from '@huggingface/inference';
 
 interface Message {
@@ -50,9 +50,11 @@ const Chatbot: React.FC = () => {
         {messages.map((message, index) => (
           <div
             key={index}
-            className={`my-2 p-4 rounded-lg ${message.sender === 'bot' ? 'bg-blue-200 text-left' : 'bg-green-200 text-right'}`}
-            dangerouslySetInnerHTML={{ __html: interpretSpecialChars(message.text) }}
-          />
+            className={`flex items-center my-2 p-4 rounded-lg ${message.sender === 'bot' ? 'bg-blue-200 text-left' : 'bg-green-200 text-right'}`}
+          >
+            {message.sender === 'bot' ? <FiCpu className="mr-2" size={20} /> : <FiUser className="mr-2" size={20} />}
+            <span dangerouslySetInnerHTML={{ __html: interpretSpecialChars(message.text) }} />
+          </div>
         ))}
       </div>
       <div className="flex p-4 bg-white border-t border-gray-200">
