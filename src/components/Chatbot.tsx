@@ -180,7 +180,7 @@ const Chatbot: React.FC = () => {
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder="Quel est la durée légale de la période d'essaie en entreprise ?"
+              placeholder="Votre question ..."
               disabled={loading}
             />
             <button
