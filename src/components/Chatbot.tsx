@@ -1,5 +1,6 @@
 import { useState, ChangeEvent, KeyboardEvent } from 'react';
-import { FiSend, FiLoader, FiTrash2, FiRefreshCw } from 'react-icons/fi'; // Importer une icône pour l'effacement et actualisation
+import { FiSend, FiLoader, FiTrash2, FiEdit, FiMousePointer } from 'react-icons/fi';
+import Image from 'next/image';
 
 interface Message {
   text: string;
@@ -8,10 +9,11 @@ interface Message {
 
 const Chatbot: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
-    { text: 'Bonjour, je suis le jeune RH disposé à répondre à vos questions.', sender: 'bot' },
+    { text: 'Comment puis-je vous aider ?', sender: 'bot' }, // Premier message du bot
   ]);
   const [input, setInput] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false); // Indicateur de chargement
+  const [loading, setLoading] = useState<boolean>(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   const sendMessage = async () => {
     if (input.trim() === '') return;
@@ -20,8 +22,7 @@ const Chatbot: React.FC = () => {
     setMessages((prevMessages) => [...prevMessages, newMessage]);
     setInput('');
 
-    // Ajouter un message vide du bot pendant que la réponse est en attente
-    const botMessage: Message = { text: 'Un instant, je cherche pour la réponse', sender: 'bot' };
+    const botMessage: Message = { text: '...', sender: 'bot' };
     setMessages((prevMessages) => [...prevMessages, botMessage]);
     setLoading(true);
 
@@ -35,17 +36,15 @@ const Chatbot: React.FC = () => {
       });
 
       const data = await response.json();
-
-      // Mise à jour du message du bot avec la réponse reçue
       setMessages((prevMessages) => {
         const updatedMessages = [...prevMessages];
-        updatedMessages[updatedMessages.length - 1].text = data.Reponse; // Mettre à jour avec la réponse complète
+        updatedMessages[updatedMessages.length - 1].text = data.Reponse;
         return updatedMessages;
       });
     } catch (error) {
       setMessages((prevMessages) => {
         const updatedMessages = [...prevMessages];
-        updatedMessages[updatedMessages.length - 1].text = 'Désolé, une erreur est survenue.'; // Gérer les erreurs
+        updatedMessages[updatedMessages.length - 1].text = 'Désolé, une erreur est survenue.';
         return updatedMessages;
       });
     } finally {
@@ -53,9 +52,46 @@ const Chatbot: React.FC = () => {
     }
   };
 
-  // Fonction pour supprimer un message spécifique
+  const resendMessage = async (index: number) => {
+    const messageToResend = messages[index].text;
+    const botMessage: Message = { text: '...', sender: 'bot' };
+    setMessages((prevMessages) => [...prevMessages, botMessage]);
+    setLoading(true);
+
+    try {
+      const encodedQuestion = encodeURIComponent(messageToResend);
+      const response = await fetch(`https://back-rh.onrender.com/ask_question?question=${encodedQuestion}`, {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+        },
+      });
+
+      const data = await response.json();
+      setMessages((prevMessages) => {
+        const updatedMessages = [...prevMessages];
+        updatedMessages[updatedMessages.length - 1].text = data.Reponse;
+        return updatedMessages;
+      });
+    } catch (error) {
+      setMessages((prevMessages) => {
+        const updatedMessages = [...prevMessages];
+        updatedMessages[updatedMessages.length - 1].text = 'Désolé, une erreur est survenue.';
+        return updatedMessages;
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const deleteMessage = (index: number) => {
     setMessages((prevMessages) => prevMessages.filter((_, i) => i !== index));
+  };
+
+  const editMessage = (index: number) => {
+    const messageToEdit = messages[index].text;
+    setInput(messageToEdit);
+    setEditingIndex(index);
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -63,57 +99,96 @@ const Chatbot: React.FC = () => {
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !loading) sendMessage(); // Bloquer l'envoi si déjà en attente
-  };
-
-  const refreshPage = () => {
-    window.location.reload(); // Actualiser la page
+    if (e.key === 'Enter' && !loading) {
+      if (editingIndex !== null) {
+        const updatedMessages = [...messages];
+        updatedMessages[editingIndex].text = input;
+        setMessages(updatedMessages);
+        resendMessage(editingIndex); // Renvoyer le message modifié pour une nouvelle réponse
+        setEditingIndex(null);
+        setInput('');
+      } else {
+        sendMessage();
+      }
+    }
   };
 
   return (
     <div className="flex h-screen bg-green-50 flex-col">
-      {/* Header pour présenter le projet */}
-      <header className="bg-green-600 text-white text-center p-4 font-bold text-xl">
-        Votre Assistant RH
+      <header className="p-4 font-bold text-xl">
+        <Image
+          src="/logo.jpeg"
+          alt="Logo"
+          className="w-8 h-8 mr-2"
+          height={500}
+          width={500}
+        />
       </header>
 
       <div className="flex h-full">
-        {/* Colonne pour le bouton de rafraîchissement */}
-        <div className="w-16 bg-green-200 flex flex-col justify-center items-center">
-          <button onClick={refreshPage} className="p-4 bg-green-500 text-white rounded-full hover:bg-green-700">
-            <FiRefreshCw size={24} />
-          </button>
-        </div>
-
         <div className="flex flex-col flex-grow">
           <div className="flex-grow p-6 overflow-auto">
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={`flex items-center my-2 p-4 rounded-lg justify-between ${
-                  message.sender === 'bot' ? 'bg-green-300 text-left' : 'bg-green-400 text-right'
+                className={`flex items-center my-2 p-4 rounded-lg ${
+                  message.sender === 'user' ? 'justify-start' : 'justify-end'
                 }`}
               >
-                <span className="text-white font-bold">{message.text}</span> {/* Texte en blanc et en gras */}
-                <button onClick={() => deleteMessage(index)} className="ml-4 text-red-500 hover:text-red-700">
-                  <FiTrash2 size={20} />
-                </button>
+                {message.sender === 'bot' && (
+                  <div className="flex items-center mr-2">
+                    <Image
+                      src="/logo.jpeg" // Image du logo du bot
+                      alt="Bot Logo"
+                      className="w-8 h-8 rounded-full"
+                      height={500}
+                      width={500}
+                    />
+                  </div>
+                )}
+
+                <span className="bg-green-300 text-black p-2 rounded-md">
+                  {message.text}
+                </span>
+
+                {index !== 0 && message.sender === 'user' && (
+                  <div className="flex space-x-2 ml-2">
+                    <button onClick={() => deleteMessage(index)} className="text-red-500 hover:text-red-700">
+                      <FiTrash2 size={20} />
+                    </button>
+                    <button onClick={() => editMessage(index)} className="text-blue-500 hover:text-blue-700">
+                      <FiEdit size={20} />
+                    </button>
+                  </div>
+                )}
+                {index !== 0 && message.sender === 'bot' && (
+                  <div className="flex space-x-2 ml-2">
+                    <button onClick={() => deleteMessage(index)} className="text-red-500 hover:text-red-700">
+                      <FiTrash2 size={20} />
+                    </button>
+                    {/* Aucune icône d'envoi (FiSend) pour les messages du bot */}
+                  </div>
+                )}
               </div>
             ))}
           </div>
 
           <div className="flex p-4 bg-white border-t border-gray-200">
             <input
-              className="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none"
+              className="flex-grow p-2 border border-gray-300 rounded-full focus:outline-none bg-green-500 text-white placeholder-white"
               type="text"
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder="Votre question pour votre expert RH..."
-              disabled={loading} // Désactiver le champ pendant le chargement
+              placeholder="Quel est la durée légale de la période d'essaie en entreprise ?"
+              disabled={loading}
             />
-            <button onClick={sendMessage} className="ml-2 p-2 bg-green-500 text-white rounded-md flex items-center justify-center" disabled={loading}>
-              {loading ? <FiLoader className="animate-spin" size={20} /> : <FiSend size={20} />} {/* Spinner ou icône d'envoi */}
+            <button
+              onClick={sendMessage}
+              className="ml-2 p-2 bg-green-500 text-white rounded-full flex items-center justify-center"
+              disabled={loading}
+            >
+              {loading ? <FiLoader className="animate-spin" size={20} /> : <FiMousePointer size={20} />}
             </button>
           </div>
         </div>
@@ -123,3 +198,8 @@ const Chatbot: React.FC = () => {
 };
 
 export default Chatbot;
+
+
+
+
+
