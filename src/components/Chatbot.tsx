@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, KeyboardEvent } from 'react';
-import { FiLoader, FiTrash2, FiEdit, FiMousePointer } from 'react-icons/fi';
+import { FiSend, FiLoader, FiTrash2, FiEdit, FiMousePointer } from 'react-icons/fi';
 import Image from 'next/image';
 
 interface Message {
@@ -9,7 +9,7 @@ interface Message {
 
 const Chatbot: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
-    { text: 'Comment puis-je vous aider ?', sender: 'bot' }, // Message de bienvenue
+    { text: 'Comment puis-je vous aider ?', sender: 'bot' }, // Premier message du bot
   ]);
   const [input, setInput] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -119,7 +119,7 @@ const Chatbot: React.FC = () => {
         <Image
           src="/logo.jpeg"
           alt="Logo"
-          className="w-8 h-8 mr-2"
+          className="w-8 h-8 mr-2" // Cadre carré pour l'image
           height={500}
           width={500}
         />
@@ -127,8 +127,8 @@ const Chatbot: React.FC = () => {
 
       <div className="flex h-full">
         <div className="flex flex-col flex-grow">
-          <div className="flex-grow p-6 overflow-auto flex-col-reverse">
-            {messages.reverse().map((message, index) => (
+          <div className="flex-grow p-6 overflow-auto">
+            {messages.map((message, index) => (
               <div
                 key={index}
                 className={`flex items-center my-2 p-4 rounded-lg ${
@@ -140,7 +140,7 @@ const Chatbot: React.FC = () => {
                     <Image
                       src="/logo.jpeg" // Image du logo du bot
                       alt="Bot Logo"
-                      className="w-8 h-8 rounded-full"
+                      className="w-8 h-8 mr-2" // Cadre carré pour l'image du bot
                       height={500}
                       width={500}
                     />
@@ -198,10 +198,3 @@ const Chatbot: React.FC = () => {
 };
 
 export default Chatbot;
-
-
-
-
-
-
-
