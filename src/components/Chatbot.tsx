@@ -141,7 +141,7 @@ const Chatbot: React.FC = () => {
                     <Image
                       src="/logo.jpeg" // Image du logo du bot
                       alt="Bot Logo"
-                      className="w-8 h-8 mr-2" // Cadre carré pour l'image du bot
+                      className="w-8 h-8 mr-2 rounded-full" // Cadre carré pour l'image du bot
                       height={500}
                       width={500}
                     />
