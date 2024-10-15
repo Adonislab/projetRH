@@ -1,6 +1,7 @@
 import { useState, ChangeEvent, KeyboardEvent } from 'react';
-import { FiSend, FiLoader, FiTrash2, FiEdit, FiMousePointer } from 'react-icons/fi';
+import { FiLoader, FiTrash2, FiEdit, FiMousePointer, FiSend } from 'react-icons/fi';
 import Image from 'next/image';
+import ReactMarkdown from 'react-markdown'; 
 
 interface Message {
   text: string;
@@ -147,11 +148,11 @@ const Chatbot: React.FC = () => {
                   </div>
                 )}
 
-                <span className="bg-green-300 text-black p-2 rounded-md">
+                <ReactMarkdown className="bg-green-300 text-black p-2 rounded-md">
                   {message.text}
-                </span>
+                </ReactMarkdown>
 
-                {index !== 0 && message.sender === 'user' && (
+                {index !== 0 && (
                   <div className="flex space-x-2 ml-2">
                     <button onClick={() => deleteMessage(index)} className="text-red-500 hover:text-red-700">
                       <FiTrash2 size={20} />
@@ -159,14 +160,7 @@ const Chatbot: React.FC = () => {
                     <button onClick={() => editMessage(index)} className="text-blue-500 hover:text-blue-700">
                       <FiEdit size={20} />
                     </button>
-                  </div>
-                )}
-                {index !== 0 && message.sender === 'bot' && (
-                  <div className="flex space-x-2 ml-2">
-                    <button onClick={() => deleteMessage(index)} className="text-red-500 hover:text-red-700">
-                      <FiTrash2 size={20} />
-                    </button>
-                    {/* Aucune icône d'envoi (FiSend) pour les messages du bot */}
+                    
                   </div>
                 )}
               </div>
@@ -198,3 +192,4 @@ const Chatbot: React.FC = () => {
 };
 
 export default Chatbot;
+
