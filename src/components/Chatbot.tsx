@@ -10,7 +10,7 @@ interface Message {
 
 const Chatbot: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
-    { text: 'Comment puis-je vous aider ?', sender: 'bot' }, // Premier message du bot
+    { text: 'Comment puis-je vous aider dans votre apprentissage ML ?', sender: 'bot' }, // Premier message du bot
   ]);
   const [input, setInput] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
