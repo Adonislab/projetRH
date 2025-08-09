@@ -20,82 +20,95 @@ const Chatbot: React.FC = () => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   const sendMessage = async () => {
-    if (input.trim() === '') return;
+  if (input.trim() === '') return;
 
-    const newMessage: Message = { text: input, sender: 'user' };
-    setMessages((prev) => [...prev, newMessage]);
-    setInput('');
+  const newMessage: Message = { text: input, sender: 'user' };
+  setMessages((prev) => [...prev, newMessage]);
+  setInput('');
 
-    const botMessage: Message = { text: '...', sender: 'bot' };
-    setMessages((prev) => [...prev, botMessage]);
-    setLoading(true);
+  const botMessage: Message = { text: '...', sender: 'bot' };
+  setMessages((prev) => [...prev, botMessage]);
+  setLoading(true);
 
-    try {
-      const encodedQuestion = encodeURIComponent(input);
-      const response = await fetch(
-        `https://back-rh.onrender.com/ask_question?question=${encodedQuestion}`,
-        {
-          method: 'POST',
-          headers: { accept: 'application/json' },
-        }
-      );
-
-      const data = await response.json();
-
-      // Formatage du message bot avec réponse + documents
-      let formattedText = data.Reponse;
-      if (data.Documents && Array.isArray(data.Documents)) {
-        formattedText += `\n\n**📄 Documents associés :**\n`;
-        data.Documents.forEach((doc: any, idx: number) => {
-          formattedText += `\n${idx + 1}. **Source :** ${doc.source} *(page ${doc.page})*\n> ${doc.extrait}`;
-        });
-      }
-
-      setMessages((prev) => {
-        const updated = [...prev];
-        updated[updated.length - 1].text = formattedText;
-        return updated;
-      });
-    } catch {
-      setMessages((prev) => {
-        const updated = [...prev];
-        updated[updated.length - 1].text = 'Désolé, une erreur est survenue.';
-        return updated;
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const resendMessage = async (index: number) => {
-    const messageToResend = messages[index].text;
-    const botMessage: Message = { text: '...', sender: 'bot' };
-    setMessages((prev) => [...prev, botMessage]);
-    setLoading(true);
-
-    try {
-      const encodedQuestion = encodeURIComponent(messageToResend);
-      const response = await fetch(`https://back-rh.onrender.com/ask_question?question=${encodedQuestion}`, {
+  try {
+    const encodedQuestion = encodeURIComponent(input);
+    const response = await fetch(
+      `https://back-rh.onrender.com/ask_question?question=${encodedQuestion}`,
+      {
         method: 'POST',
         headers: { accept: 'application/json' },
-      });
+      }
+    );
 
-      const data = await response.json();
-      setMessages((prev) => {
-        const updated = [...prev];
-        updated[updated.length - 1].text = data.Reponse;
-        return updated;
+    const data = await response.json();
+
+    // Lire la bonne clé "Reponse" et pas "texte"
+    let formattedText = data.Reponse ?? '';
+
+    // Ajouter la liste des documents s'il y en a
+    if (data.Documents && Array.isArray(data.Documents)) {
+      formattedText += `\n\n**📄 Documents associés :**\n`;
+      data.Documents.forEach((doc: any, idx: number) => {
+        formattedText += `\n${idx + 1}. **Source :** ${doc.source} *(page ${doc.page})*\n> ${doc.extrait}`;
       });
-    } catch {
-      setMessages((prev) => {
-        const updated = [...prev];
-        updated[updated.length - 1].text = 'Désolé, une erreur est survenue.';
-        return updated;
-      });
-    } finally {
-      setLoading(false);
     }
-  };
+
+    setMessages((prev) => {
+      const updated = [...prev];
+      updated[updated.length - 1].text = formattedText;
+      return updated;
+    });
+  } catch {
+    setMessages((prev) => {
+      const updated = [...prev];
+      updated[updated.length - 1].text = 'Désolé, une erreur est survenue.';
+      return updated;
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  const resendMessage = async (index: number) => {
+  const messageToResend = messages[index].text;
+  const botMessage: Message = { text: '...', sender: 'bot' };
+  setMessages((prev) => [...prev, botMessage]);
+  setLoading(true);
+
+  try {
+    const encodedQuestion = encodeURIComponent(messageToResend);
+    const response = await fetch(`https://back-rh.onrender.com/ask_question?question=${encodedQuestion}`, {
+      method: 'POST',
+      headers: { accept: 'application/json' },
+    });
+
+    const data = await response.json();
+
+    let formattedText = data.Reponse ?? '';
+
+    if (data.Documents && Array.isArray(data.Documents)) {
+      formattedText += `\n\n**📄 Documents associés :**\n`;
+      data.Documents.forEach((doc: any, idx: number) => {
+        formattedText += `\n${idx + 1}. **Source :** ${doc.source} *(page ${doc.page})*\n> ${doc.extrait}`;
+      });
+    }
+
+    setMessages((prev) => {
+      const updated = [...prev];
+      updated[updated.length - 1].text = formattedText;
+      return updated;
+    });
+  } catch {
+    setMessages((prev) => {
+      const updated = [...prev];
+      updated[updated.length - 1].text = 'Désolé, une erreur est survenue.';
+      return updated;
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const deleteMessage = (index: number) => {
     setMessages((prev) => prev.filter((_, i) => i !== index));
