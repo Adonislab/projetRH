@@ -32,15 +32,28 @@ const Chatbot: React.FC = () => {
 
     try {
       const encodedQuestion = encodeURIComponent(input);
-      const response = await fetch(`https://back-rh.onrender.com/ask_question?question=${encodedQuestion}`, {
-        method: 'POST',
-        headers: { accept: 'application/json' },
-      });
+      const response = await fetch(
+        `https://back-rh.onrender.com/ask_question?question=${encodedQuestion}`,
+        {
+          method: 'POST',
+          headers: { accept: 'application/json' },
+        }
+      );
 
       const data = await response.json();
+
+      // Formatage du message bot avec réponse + documents
+      let formattedText = data.Reponse;
+      if (data.Documents && Array.isArray(data.Documents)) {
+        formattedText += `\n\n**📄 Documents associés :**\n`;
+        data.Documents.forEach((doc: any, idx: number) => {
+          formattedText += `\n${idx + 1}. **Source :** ${doc.source} *(page ${doc.page})*\n> ${doc.extrait}`;
+        });
+      }
+
       setMessages((prev) => {
         const updated = [...prev];
-        updated[updated.length - 1].text = data.Reponse;
+        updated[updated.length - 1].text = formattedText;
         return updated;
       });
     } catch {
