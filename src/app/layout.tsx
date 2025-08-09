@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "App: ML Learn",
-  description: "Le Jeune ML",
+  title: "App: Assitant Maths 3ème",
+  description: "Le Jeune assitant des mathématiques",
 };
 
 export default function RootLayout({

@@ -1,7 +1,10 @@
 import { useState, ChangeEvent, KeyboardEvent } from 'react';
-import { FiLoader, FiTrash2, FiEdit, FiMousePointer, FiSend } from 'react-icons/fi';
+import { FiLoader, FiTrash2, FiEdit, FiMousePointer } from 'react-icons/fi';
 import Image from 'next/image';
-import ReactMarkdown from 'react-markdown'; 
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 
 interface Message {
   text: string;
@@ -10,7 +13,7 @@ interface Message {
 
 const Chatbot: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
-    { text: 'Comment puis-je vous aider dans votre apprentissage ML ?', sender: 'bot' }, // Premier message du bot
+    { text: 'Comment puis-je vous aider dans votre apprentissage des mathématiques de 3ème ?', sender: 'bot' },
   ]);
   const [input, setInput] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -20,33 +23,31 @@ const Chatbot: React.FC = () => {
     if (input.trim() === '') return;
 
     const newMessage: Message = { text: input, sender: 'user' };
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
+    setMessages((prev) => [...prev, newMessage]);
     setInput('');
 
     const botMessage: Message = { text: '...', sender: 'bot' };
-    setMessages((prevMessages) => [...prevMessages, botMessage]);
+    setMessages((prev) => [...prev, botMessage]);
     setLoading(true);
 
     try {
       const encodedQuestion = encodeURIComponent(input);
       const response = await fetch(`https://back-rh.onrender.com/ask_question?question=${encodedQuestion}`, {
         method: 'POST',
-        headers: {
-          accept: 'application/json',
-        },
+        headers: { accept: 'application/json' },
       });
 
       const data = await response.json();
-      setMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages];
-        updatedMessages[updatedMessages.length - 1].text = data.Reponse;
-        return updatedMessages;
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1].text = data.Reponse;
+        return updated;
       });
-    } catch (error) {
-      setMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages];
-        updatedMessages[updatedMessages.length - 1].text = 'Désolé, une erreur est survenue.';
-        return updatedMessages;
+    } catch {
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1].text = 'Désolé, une erreur est survenue.';
+        return updated;
       });
     } finally {
       setLoading(false);
@@ -56,29 +57,27 @@ const Chatbot: React.FC = () => {
   const resendMessage = async (index: number) => {
     const messageToResend = messages[index].text;
     const botMessage: Message = { text: '...', sender: 'bot' };
-    setMessages((prevMessages) => [...prevMessages, botMessage]);
+    setMessages((prev) => [...prev, botMessage]);
     setLoading(true);
 
     try {
       const encodedQuestion = encodeURIComponent(messageToResend);
       const response = await fetch(`https://back-rh.onrender.com/ask_question?question=${encodedQuestion}`, {
         method: 'POST',
-        headers: {
-          accept: 'application/json',
-        },
+        headers: { accept: 'application/json' },
       });
 
       const data = await response.json();
-      setMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages];
-        updatedMessages[updatedMessages.length - 1].text = data.Reponse;
-        return updatedMessages;
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1].text = data.Reponse;
+        return updated;
       });
-    } catch (error) {
-      setMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages];
-        updatedMessages[updatedMessages.length - 1].text = 'Désolé, une erreur est survenue.';
-        return updatedMessages;
+    } catch {
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1].text = 'Désolé, une erreur est survenue.';
+        return updated;
       });
     } finally {
       setLoading(false);
@@ -86,12 +85,11 @@ const Chatbot: React.FC = () => {
   };
 
   const deleteMessage = (index: number) => {
-    setMessages((prevMessages) => prevMessages.filter((_, i) => i !== index));
+    setMessages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const editMessage = (index: number) => {
-    const messageToEdit = messages[index].text;
-    setInput(messageToEdit);
+    setInput(messages[index].text);
     setEditingIndex(index);
   };
 
@@ -102,10 +100,10 @@ const Chatbot: React.FC = () => {
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !loading) {
       if (editingIndex !== null) {
-        const updatedMessages = [...messages];
-        updatedMessages[editingIndex].text = input;
-        setMessages(updatedMessages);
-        resendMessage(editingIndex); // Renvoyer le message modifié pour une nouvelle réponse
+        const updated = [...messages];
+        updated[editingIndex].text = input;
+        setMessages(updated);
+        resendMessage(editingIndex);
         setEditingIndex(null);
         setInput('');
       } else {
@@ -117,13 +115,7 @@ const Chatbot: React.FC = () => {
   return (
     <div className="flex h-screen bg-green-50 flex-col">
       <header className="p-4 font-bold text-xl">
-        <Image
-          src="/logo.jpeg"
-          alt="Logo"
-          className="w-8 h-8 mr-2" // Cadre carré pour l'image
-          height={500}
-          width={500}
-        />
+        <Image src="/logo.jpeg" alt="Logo" className="w-8 h-8 mr-2" height={500} width={500} />
       </header>
 
       <div className="flex h-full">
@@ -139,16 +131,20 @@ const Chatbot: React.FC = () => {
                 {message.sender === 'bot' && (
                   <div className="flex items-center mr-2">
                     <Image
-                      src="/logo.jpeg" // Image du logo du bot
+                      src="/logo.jpeg"
                       alt="Bot Logo"
-                      className="w-8 h-8 mr-2 rounded-full" // Cadre carré pour l'image du bot
+                      className="w-8 h-8 mr-2 rounded-full"
                       height={500}
                       width={500}
                     />
                   </div>
                 )}
 
-                <ReactMarkdown className="bg-green-300 text-black p-2 rounded-md">
+                <ReactMarkdown
+                  className="bg-green-300 text-black p-2 rounded-md"
+                  remarkPlugins={[remarkMath]}
+                  rehypePlugins={[rehypeKatex]}
+                >
                   {message.text}
                 </ReactMarkdown>
 
@@ -160,7 +156,6 @@ const Chatbot: React.FC = () => {
                     <button onClick={() => editMessage(index)} className="text-blue-500 hover:text-blue-700">
                       <FiEdit size={20} />
                     </button>
-                    
                   </div>
                 )}
               </div>
@@ -192,4 +187,3 @@ const Chatbot: React.FC = () => {
 };
 
 export default Chatbot;
-
