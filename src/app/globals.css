@@ -1,33 +1,305 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  /* Light theme colors */
+  --bg-primary: 255, 255, 255;
+  --bg-secondary: 248, 250, 252;
+  --bg-tertiary: 241, 245, 249;
+  --bg-chat: 255, 255, 255;
+  --bg-user-message: 99, 102, 241;
+  --bg-bot-message: 248, 250, 252;
+  --bg-sidebar: 249, 250, 251;
+  --bg-input: 255, 255, 255;
+  
+  --text-primary: 15, 23, 42;
+  --text-secondary: 71, 85, 105;
+  --text-tertiary: 148, 163, 184;
+  --text-user: 255, 255, 255;
+  --text-bot: 15, 23, 42;
+  
+  --border-primary: 226, 232, 240;
+  --border-secondary: 241, 245, 249;
+  --border-focus: 99, 102, 241;
+  
+  --accent-primary: 99, 102, 241;
+  --accent-secondary: 139, 92, 246;
+  --accent-success: 34, 197, 94;
+  --accent-warning: 251, 191, 36;
+  --accent-error: 239, 68, 68;
+  
+  /* Gradient colors */
+  --gradient-primary: linear-gradient(135deg, rgb(99, 102, 241) 0%, rgb(139, 92, 246) 100%);
+  --gradient-secondary: linear-gradient(135deg, rgb(34, 197, 94) 0%, rgb(59, 130, 246) 100%);
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 0, 0, 0;
-    --background-start-rgb: 255, 255, 255;
-    --background-end-rgb: 255, 255, 255;
-  }
+[data-theme="dark"] {
+  /* Dark theme colors */
+  --bg-primary: 15, 23, 42;
+  --bg-secondary: 30, 41, 59;
+  --bg-tertiary: 51, 65, 85;
+  --bg-chat: 15, 23, 42;
+  --bg-user-message: 99, 102, 241;
+  --bg-bot-message: 30, 41, 59;
+  --bg-sidebar: 15, 23, 42;
+  --bg-input: 30, 41, 59;
+  
+  --text-primary: 248, 250, 252;
+  --text-secondary: 203, 213, 225;
+  --text-tertiary: 148, 163, 184;
+  --text-user: 255, 255, 255;
+  --text-bot: 248, 250, 252;
+  
+  --border-primary: 51, 65, 85;
+  --border-secondary: 30, 41, 59;
+  --border-focus: 99, 102, 241;
+  
+  --accent-primary: 99, 102, 241;
+  --accent-secondary: 139, 92, 246;
+  --accent-success: 34, 197, 94;
+  --accent-warning: 251, 191, 36;
+  --accent-error: 239, 68, 68;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  color: rgb(var(--text-primary));
+  background: rgb(var(--bg-primary));
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(var(--bg-secondary));
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border-primary));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--text-tertiary));
+}
+
+/* Animation utilities */
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  
+  .animate-in {
+    animation: slideIn 0.2s ease-out;
+  }
+  
+  .animate-pulse-soft {
+    animation: pulseSoft 2s infinite;
+  }
+  
+  .transition-all-smooth {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseSoft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Custom component styles */
+@layer components {
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  [data-theme="dark"] .glass-effect {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .floating-input {
+    background: rgb(var(--bg-input));
+    border: 1px solid rgb(var(--border-primary));
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .message-bubble {
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+  }
+  
+  .message-bubble:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+  
+  /* Inline Edit Styles */
+  .message-edit-textarea {
+    resize: none;
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    transition: all 0.2s ease;
+  }
+  
+  .message-edit-textarea:focus {
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  }
+  
+  [data-theme="dark"] .message-edit-textarea {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  [data-theme="dark"] .message-edit-textarea:focus {
+    border-color: rgba(255, 255, 255, 0.3) !important;
+  }
+  
+  /* Edit Button Styles */
+  .edit-button {
+    background: rgb(var(--bg-primary));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  [data-theme="dark"] .edit-button {
+    background: rgb(var(--bg-secondary));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Action Buttons Container */
+  .action-buttons-container {
+    gap: 4px;
+  }
+  
+  .action-buttons-container .edit-button:hover {
+    transform: scale(1.1);
+  }
+  
+  /* Save/Cancel Button Styles */
+  .save-button {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    transition: all 0.2s ease;
+  }
+  
+  .save-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: scale(1.02);
+  }
+  
+  .cancel-button {
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    transition: all 0.2s ease;
+  }
+  
+  .cancel-button:hover {
+    background: rgba(0, 0, 0, 0.2);
+    transform: scale(1.02);
+  }
+  
+  [data-theme="dark"] .cancel-button {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  [data-theme="dark"] .cancel-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  /* Responsive Edit Styles */
+  @media (max-width: 640px) {
+    .message-edit-textarea {
+      min-height: 60px;
+      font-size: 0.9rem;
+    }
+    
+    .edit-button {
+      width: 28px;
+      height: 28px;
+      padding: 6px;
+    }
+    
+    .action-buttons-container {
+      flex-direction: column;
+      gap: 2px;
+    }
+    
+    .save-button, .cancel-button {
+      padding: 8px 12px;
+      font-size: 0.8rem;
+    }
+    
+    .save-button span, .cancel-button span {
+      display: none;
+    }
+    
+    .save-button svg, .cancel-button svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .message-edit-textarea {
+      min-height: 50px;
+      padding: 8px;
+    }
+    
+    .edit-action-buttons {
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .edit-action-buttons button {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .edit-action-buttons span {
+      display: inline !important;
+    }
   }
 }
