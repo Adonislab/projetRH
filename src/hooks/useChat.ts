@@ -75,14 +75,6 @@ export const useChat = () => {
       const data: ApiResponse = await response.json();
       let formattedText = data.Reponse ?? 'Désolé, je n\'ai pas pu traiter votre demande.';
 
-      // Ajouter les documents associés si présents
-      if (data.Documents && Array.isArray(data.Documents)) {
-        formattedText += `\n\n**📄 Documents associés :**\n`;
-        data.Documents.forEach((doc, idx) => {
-          formattedText += `\n${idx + 1}. **Source :** ${doc.source} *(page ${doc.page})*\n> ${doc.extrait}`;
-        });
-      }
-
       console.log('messages:', messages);
 
       // Mettre à jour le dernier message bot (celui avec "...")
