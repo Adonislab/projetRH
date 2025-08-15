@@ -12,7 +12,7 @@ const defaultSettings: UserSettings = {
   mathNotation: 'latex',
   autoSave: true,
   soundEnabled: true,
-  apiEndpoint: 'https://back-rh.onrender.com',
+  apiEndpoint: 'http://192.168.6.219:8000',
   maxTokens: 2048,
   temperature: 0.7
 };

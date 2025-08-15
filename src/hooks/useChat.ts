@@ -39,11 +39,12 @@ export const useChat = () => {
     });
 
     // Ajouter un message bot temporaire
-    const botMessageId = generateId();
     addMessage(currentConversationId, {
       text: '...',
       sender: 'bot'
     });
+
+    // console.log('messages:', messages);
 
     // Mettre à jour le titre de la conversation si c'est le premier message
     if (currentConversation && currentConversation.messages.length === 1) {
@@ -82,10 +83,16 @@ export const useChat = () => {
         });
       }
 
-      // Mettre à jour le message bot avec la réponse
-      const botMessages = messages.filter(msg => msg.sender === 'bot' && msg.text === '...');
+      console.log('messages:', messages);
+
+      // Mettre à jour le dernier message bot (celui avec "...")
+      // Récupérer les messages à jour depuis le store
+      const currentMessages = useChatStore.getState().conversations.find(c => c.id === currentConversationId)?.messages || [];
+      const botMessages = currentMessages.filter(msg => msg.sender === 'bot' && msg.text === '...');
+      console.log('botMessages:', botMessages);
       if (botMessages.length > 0) {
         const latestBotMessage = botMessages[botMessages.length - 1];
+        console.log('latestBotMessage:', latestBotMessage);
         updateMessage(currentConversationId, latestBotMessage.id, formattedText);
       }
 
@@ -102,10 +109,14 @@ export const useChat = () => {
         }
       }
 
-      // Mettre à jour le message bot avec l'erreur
-      const botMessages = messages.filter(msg => msg.sender === 'bot' && msg.text === '...');
+      // Mettre à jour le dernier message bot (celui avec "...")
+      // Récupérer les messages à jour depuis le store
+      const currentMessages = useChatStore.getState().conversations.find(c => c.id === currentConversationId)?.messages || [];
+      const botMessages = currentMessages.filter(msg => msg.sender === 'bot' && msg.text === '...');
+      // console.log('botMessages:', botMessages);
       if (botMessages.length > 0) {
         const latestBotMessage = botMessages[botMessages.length - 1];
+        // console.log('latestBotMessage:', latestBotMessage);
         updateMessage(currentConversationId, latestBotMessage.id, errorMessage);
       }
     } finally {
@@ -115,7 +126,6 @@ export const useChat = () => {
     loading,
     currentConversationId,
     currentConversation,
-    messages,
     apiEndpoint,
     addMessage,
     updateMessage,

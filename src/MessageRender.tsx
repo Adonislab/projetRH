@@ -65,21 +65,76 @@ const LatexMarkdownRenderer: React.FC<LatexMarkdownRendererProps> = ({
     setExpandedImages(newExpanded);
   };
 
+  // Fonction pour échapper les caractères spéciaux dans LaTeX
+  const escapeLatex = (text: string): string => {
+    return text
+      .replace(/\\/g, '\\\\')
+      .replace(/\{/g, '\\{')
+      .replace(/\}/g, '\\}')
+      .replace(/\^/g, '\\^')
+      .replace(/_/g, '\\_');
+  };
+
+  // Fonction pour détecter et traiter les formules LaTeX complexes
+  const processLatexFormulas = (text: string): string => {
+    // Détecter les formules LaTeX déjà bien formatées et les préserver
+    return text
+      // Gérer les formules complexes comme sqrt{(x_B - x_A)^{2} + (y_B - y_A)^{2}}
+      .replace(/\\sqrt\{([^}]+)\}/g, (match, content) => {
+        // Si c'est déjà dans un bloc math, ne pas modifier
+        if (match.includes('$$')) return match;
+        // Si c'est une formule complexe, la mettre en bloc
+        if (content.includes('^{') || content.includes('_{') || content.includes('\\') || content.includes('+') || content.includes('-') || content.includes('_')) {
+          return `\n$$$$\n${match}\n$$$$\n`;
+        }
+        return `$$${match}$$`;
+      })
+      // Préserver les fractions LaTeX
+      .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, (match) => {
+        if (match.includes('$$')) return match;
+        return `$$${match}$$`;
+      })
+      // Préserver les vecteurs LaTeX
+      .replace(/\\overrightarrow\{([^}]+)\}/g, (match) => {
+        if (match.includes('$$')) return match;
+        return `$$${match}$$`;
+      })
+      // Gérer les formules en blocs avec [ ]
+      .replace(/\[([^[\]]+)\]/g, (match, content) => {
+        // Si c'est une formule LaTeX, la convertir en bloc
+        if (content.includes('\\') || content.includes('^{') || content.includes('_{') || content.includes('\\sqrt') || content.includes('\\boxed')) {
+          return `\n$$$$\n${content}\n$$$$\n`;
+        }
+        return match;
+      })
+      // Gérer les formules avec boxed
+      .replace(/\\boxed\{([^}]+)\}/g, (match, content) => {
+        if (match.includes('$$')) return match;
+        return `\n$$$$\n${match}\n$$$$\n`;
+      })
+      // Gérer les formules avec des exposants et indices complexes
+      .replace(/([a-zA-Z])_([a-zA-Z])/g, '$1_{$2}')
+      .replace(/([a-zA-Z])\^([a-zA-Z0-9])/g, '$1^{$2}')
+      // Nettoyer les espaces dans les formules LaTeX
+      .replace(/\$\$\s+/g, '$$')
+      .replace(/\s+\$\$/g, '$$');
+  };
+
   // Préprocesser le contenu pour améliorer la détection LaTeX et ajouter les graphiques
   const preprocessContent = (text: string): string => {
     let processed = text
-      // Formules en ligne avec $ $
-      .replace(/\$([^$\n]+)\$/g, '$$$1$$')
-      // Formules en blocs avec $$ $$
-      .replace(/\$\$([^$]+)\$\$/g, '\n$$$$\n$1\n$$$$\n')
+      // Formules en ligne avec $ $ (amélioré pour éviter les conflits)
+      .replace(/(?<!\\)\$([^$\n]+?)\$/g, '$$$1$$')
+      // Formules en blocs avec $$ $$ (amélioré)
+      .replace(/\$\$([^$]+?)\$\$/g, '\n$$$$\n$1\n$$$$\n')
       // Améliorer les vecteurs LaTeX courants
       .replace(/\\vec\{([^}]+)\}/g, '\\overrightarrow{$1}')
-      // Gérer les fractions dans le texte
-      .replace(/(\d+)\/(\d+)/g, '\\frac{$1}{$2}')
-      // Améliorer les exposants et indices
-      .replace(/\^(\d+)/g, '^{$1}')
-      .replace(/_(\d+)/g, '_{$1}')
-      // Améliorer les racines carrées
+      // Gérer les fractions dans le texte (plus précis)
+      .replace(/(?<!\\)(\d+)\/(\d+)(?!\d)/g, '\\frac{$1}{$2}')
+      // Améliorer les exposants et indices (plus précis)
+      .replace(/(?<!\\)\^(\d+)(?!\d)/g, '^{$1}')
+      .replace(/(?<!\\)_(\d+)(?!\d)/g, '_{$1}')
+      // Améliorer les racines carrées (plus robuste)
       .replace(/sqrt\(([^)]+)\)/g, '\\sqrt{$1}')
       // Symboles mathématiques courants
       .replace(/\+-/g, '\\pm')
@@ -97,7 +152,22 @@ const LatexMarkdownRenderer: React.FC<LatexMarkdownRendererProps> = ({
       .replace(/cos\(/g, '\\cos(')
       .replace(/tan\(/g, '\\tan(')
       .replace(/log\(/g, '\\log(')
-      .replace(/ln\(/g, '\\ln(');
+      .replace(/ln\(/g, '\\ln(')
+      // Gérer les formules LaTeX déjà correctement formatées
+      .replace(/\\sqrt\{([^}]+)\}/g, '\\sqrt{$1}')
+      .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '\\frac{$1}{$2}')
+      // Améliorer la détection des formules en blocs
+      .replace(/\[([^[\]]+)\]/g, (match, content) => {
+        // Si c'est une formule LaTeX, la convertir en bloc
+        if (content.includes('\\') || content.includes('^{') || content.includes('_{') || content.includes('\\sqrt') || content.includes('\\boxed')) {
+          return `\n$$$$\n${content}\n$$$$\n`;
+        }
+        return match;
+      })
+      // Gérer les formules avec des espaces et des caractères spéciaux
+      .replace(/\\sqrt\s*\{([^}]+)\}/g, '\\sqrt{$1}')
+      .replace(/\\frac\s*\{([^}]+)\}\s*\{([^}]+)\}/g, '\\frac{$1}{$2}')
+      .replace(/\\overrightarrow\s*\{([^}]+)\}/g, '\\overrightarrow{$1}');
 
     return processed;
   };
@@ -115,7 +185,7 @@ const LatexMarkdownRenderer: React.FC<LatexMarkdownRendererProps> = ({
     }
   };
 
-  const processedContent = preprocessContent(content);
+  const processedContent = processLatexFormulas(preprocessContent(content));
   const graphData = parseGraphData(content);
 
   // Variables de couleur basées sur le thème
@@ -159,7 +229,15 @@ const LatexMarkdownRenderer: React.FC<LatexMarkdownRendererProps> = ({
 
       <ReactMarkdown
         remarkPlugins={[remarkMath, remarkGfm]}
-        rehypePlugins={[rehypeKatex, rehypeRaw]}
+        rehypePlugins={[
+          rehypeKatex, 
+          rehypeRaw,
+          // Plugin personnalisé pour améliorer le rendu LaTeX
+          () => (tree) => {
+            // Améliorer le rendu des formules LaTeX
+            return tree;
+          }
+        ]}
         components={{
           // Titres avec style adaptatif
           h1: ({ children }) => (
@@ -252,9 +330,10 @@ const LatexMarkdownRenderer: React.FC<LatexMarkdownRendererProps> = ({
               );
             }
             
+            // For block code, use a span with block display to avoid hydration issues
             return (
-              <div className="relative group mb-4">
-                <pre className="p-4 rounded-xl overflow-x-auto font-mono text-sm"
+              <span className="block relative group mb-4">
+                <span className="block p-4 rounded-xl overflow-x-auto font-mono text-sm whitespace-pre-wrap"
                      style={{ 
                        backgroundColor: textColors.codeBackground,
                        border: `1px solid ${textColors.border}`
@@ -262,7 +341,7 @@ const LatexMarkdownRenderer: React.FC<LatexMarkdownRendererProps> = ({
                   <code style={{ color: textColors.primary }}>
                     {children}
                   </code>
-                </pre>
+                </span>
                 <button
                   onClick={() => copyToClipboard(codeString)}
                   className="absolute top-2 right-2 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
@@ -273,7 +352,7 @@ const LatexMarkdownRenderer: React.FC<LatexMarkdownRendererProps> = ({
                 >
                   {copiedCode === codeString ? <Check size={16} /> : <Copy size={16} />}
                 </button>
-              </div>
+              </span>
             );
           },
           
@@ -357,6 +436,7 @@ const LatexMarkdownRenderer: React.FC<LatexMarkdownRendererProps> = ({
         .enhanced-message-renderer .katex {
           font-size: 1.15em !important;
           color: ${textColors.primary} !important;
+          line-height: 1.2 !important;
         }
         
         .enhanced-message-renderer .katex-display {
@@ -366,6 +446,15 @@ const LatexMarkdownRenderer: React.FC<LatexMarkdownRendererProps> = ({
           background: ${textColors.background};
           border-radius: 12px;
           border: 1px solid ${textColors.border};
+          overflow-x: auto;
+          overflow-y: hidden;
+        }
+        
+        .enhanced-message-renderer .katex-display > .katex {
+          display: inline-block;
+          text-align: initial;
+          color: ${textColors.primary} !important;
+          white-space: nowrap;
         }
         
         .enhanced-message-renderer .katex-display > .katex {

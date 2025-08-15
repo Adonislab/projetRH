@@ -20,9 +20,9 @@ export { createPersistentStorage, serializeState, deserializeState, cleanupOldDa
 
 // Hook combiné pour initialiser tous les stores
 import { useEffect } from 'react';
-import { useChatStore } from './chatStore';
-import { useThemeStore, useResponsiveDetection, useSystemThemeDetection } from './themeStore';
-import { useSettingsStore } from './settingsStore';
+import { useChatStore, useChatActions } from './chatStore';
+import { useThemeStore, useResponsiveDetection, useSystemThemeDetection, useThemeActions } from './themeStore';
+import { useSettingsStore, useSettingsActions } from './settingsStore';
 
 /**
  * Hook principal pour initialiser et configurer tous les stores au démarrage de l'application

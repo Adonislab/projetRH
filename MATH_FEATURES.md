@@ -117,3 +117,4 @@ Le composant s'adapte automatiquement au système de thème de l'application :
 ```
 
 Cette intégration offre maintenant une expérience d'apprentissage des mathématiques de niveau professionnel, parfaitement adaptée aux besoins des élèves de 3ème !
+
